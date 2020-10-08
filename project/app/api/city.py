@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException
-import pandas as pd
+from app.database import fetch_query_records
 
 router = APIRouter()
 
@@ -24,23 +24,34 @@ async def city(city_id: int):
     """
 
     # Validate the city_id
-    # city_ids = json.load(i
-    # with open(os.path.join(path, 'city_ids.json'), 'r') as f:
-    
-    city_ids = pd.read_csv('/usr/src/app/city_id_lookup.csv')
     
     if city_id not in range(1278): 
         raise HTTPException(status_code=404, detail=f'City id {city_id} not found')
 
-    # pull in preliminary dataframe
-    df = pd.read_csv('citydata.csv', index_col='city_id') 
+    # if city_id valid, establish sql query statement
+    query = '''SELECT *
+                FROM
+                    citydata
+                WHERE
+                    city_id = (%s);
+    '''
 
-#     # Make Plotly figure
-#     statename = statecodes[statecode]
-#     fig = px.line(df, x='Date', y='Percent', title=f'{statename} Unemployment Rate')
-# 
-#     # Return Plotly figure as JSON string
-#     return fig.to_json()
+    params = (city_id,)
 
-    return df.loc[city_id].to_json(orient='index')  # orient='split', index=False)
+    if query[:8] == 'SELECT *':
+        columns = ['city_id',
+                    'city',
+                    'population',
+                    'median_age',
+                    'median_household_income',
+                    'median_individual_income',
+                    'median_home_cost',
+                    'median_rent',
+                    'Cost-of-Living-Index']
+        results = list(fetch_query_records(query, params)[0])
+        return dict(zip(columns, results))
+
+    return fetch_query_records(query, params)
+
+#    return df.loc[city_id].to_json(orient='index')  # orient='split', index=False)
 
