@@ -1,8 +1,5 @@
 import os
-from dotenv import load_dotenv
 import psycopg2
-
-load_dotenv()
 
 def fetch_query_records(query, params=None):
     """ Creates a connection to database; returns query from specified table.
@@ -10,10 +7,10 @@ def fetch_query_records(query, params=None):
     Returns: response (cursor.fetchall() obj in array form)
     """
     
-    DB_NAME = os.getenv("DB_NAME")
-    DB_USER = os.getenv("DB_USER")
-    DB_PW = os.getenv("DB_PW")
-    DB_HOST = os.getenv("DB_HOST")
+    DB_NAME = os.environ['DB_NAME']
+    DB_USER = os.environ['DB_USER']
+    DB_PW = os.environ['DB_PW']
+    DB_HOST = os.environ['DB_HOST']
 
     conn = psycopg2.connect(
             dbname=DB_NAME,
