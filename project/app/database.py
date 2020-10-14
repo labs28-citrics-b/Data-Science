@@ -1,5 +1,8 @@
 import os
 import psycopg2
+from dotenv import load_dotenv
+
+load_dotenv()
 
 def fetch_query_records(query, params=None):
     """ Creates a connection to database; returns query from specified table.
