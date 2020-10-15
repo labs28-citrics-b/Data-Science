@@ -1,5 +1,8 @@
 from fastapi import APIRouter, HTTPException
+from typing import List
+
 from app.database import fetch_query_records
+from app import schemas
 
 router = APIRouter()
 
@@ -55,3 +58,40 @@ async def city(city_id: int):
 
 #    return df.loc[city_id].to_json(orient='index')  # orient='split', index=False)
 
+@router.get('/all_cities/', response_model=List[schemas.City])
+async def get_all_cities():
+    '''
+    Returns a list of all cities and their stats
+
+    ### Response
+    JSON string containing 
+    - **city**: [str] . . . standard format city name, state name
+    - **pop**: [int] . . . population estimate
+    - **age**: [float] . . . average age of residents
+    - **income_household**: [int] . . . median household income
+    - **income_individual**: [int] . . . median individual income
+    - **home**: [int] . . . median home/condo price
+    - **rent**: [int] . . . median rent price
+    - **COLI**: [float] . . . Cost of Living Index [ACCRA Cost of Living Index](https://en.wikipedia.org/wiki/ACCRA_Cost_of_Living_Index)
+
+    '''
+    query = '''SELECT *
+                FROM
+                    citydata
+    '''
+    columns = ['city_id',
+                    'city',
+                    'population',
+                    'median_age',
+                    'median_household_income',
+                    'median_individual_income',
+                    'median_home_cost',
+                    'median_rent',
+                    'Cost_of_Living_Index']
+    citydata = fetch_query_records(query)
+    results = []
+    for i in citydata:
+        # uses schema to validate data type
+        city_dict = schemas.City(**dict(zip(columns,i)))
+        results.append(city_dict)
+    return results
